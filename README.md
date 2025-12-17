@@ -248,8 +248,8 @@ GITHUB_TOKEN="ghp_xxxxx"
 - [x] Phase 1: Nest.js 本地初始化
 - [x] Phase 2: Prisma + 本地数据库
 - [x] Phase 3: SAM + Lambda + API Gateway
-- [ ] Phase 4: 创建 VPC 网络
-- [ ] Phase 5: Lambda 进入 VPC
+- [x] Phase 4: 创建 VPC 网络
+- [x] Phase 5: Lambda 进入 VPC
 - [ ] Phase 6: 创建 Aurora Serverless v2
 - [ ] Phase 7: Prisma 连接 Aurora
 - [ ] Phase 8: 临时创建 NAT Gateway
