@@ -246,7 +246,7 @@ GITHUB_TOKEN="ghp_xxxxx"
 
 - [x] 项目初始化
 - [x] Phase 1: Nest.js 本地初始化
-- [ ] Phase 2: Prisma + 本地数据库
+- [x] Phase 2: Prisma + 本地数据库
 - [ ] Phase 3: SAM + Lambda + API Gateway
 - [ ] Phase 4: 创建 VPC 网络
 - [ ] Phase 5: Lambda 进入 VPC
