@@ -1,0 +1,33 @@
+// Prisma Schema 文件
+// 定义数据库连接和数据模型
+
+// 数据源配置
+// 指定使用 PostgreSQL 数据库
+datasource db {
+  provider = "postgresql" // 数据库类型
+  url      = env("DATABASE_URL") // 从环境变量读取连接字符串
+}
+
+// Prisma Client 生成配置
+generator client {
+  provider = "prisma-client-js" // 生成 JavaScript/TypeScript 客户端
+}
+
+// Item 数据模型
+// 对应数据库中的 Item 表
+model Item {
+  // 主键：自增整数
+  id Int @id @default(autoincrement())
+
+  // 标题：字符串类型
+  title String
+
+  // 内容：字符串类型
+  content String
+
+  // 创建时间：自动设置为当前时间
+  createdAt DateTime @default(now())
+
+  // 表名映射（使用小写复数形式）
+  @@map("items")
+}

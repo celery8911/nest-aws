@@ -1,31 +1,38 @@
 /**
  * Items 服务
  * 处理 Item 的业务逻辑
- * Phase 1: 使用内存存储（临时方案）
- * Phase 2: 将替换为 Prisma + 数据库
+ * Phase 1: 使用内存存储（临时方案）✅
+ * Phase 2: 使用 Prisma + PostgreSQL ✅
  */
 
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { Item, CreateItemDto } from './item.entity';
+import { CreateItemDto } from './item.entity';
+import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class ItemsService {
   private readonly logger = new Logger(ItemsService.name);
 
-  // 临时的内存存储
-  // Phase 2 将替换为 Prisma Client
-  private items: Item[] = [];
+  // 通过构造函数注入 PrismaService
+  // Nest.js 会自动提供 PrismaService 实例（全局单例）
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * 获取所有 Items
    * 返回按创建时间倒序排列的 Items
+   * 使用 Prisma 查询数据库
    */
-  async findAll(): Promise<Item[]> {
-    this.logger.debug(`Found ${this.items.length} items`);
-    // 返回副本并按创建时间倒序排列（最新的在前）
-    return [...this.items].sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
-    );
+  async findAll() {
+    // 使用 Prisma 查询数据库
+    // orderBy: 按 createdAt 降序排列（最新的在前）
+    const items = await this.prisma.item.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    this.logger.debug(`Found ${items.length} items from database`);
+    return items;
   }
 
   /**
@@ -33,45 +40,59 @@ export class ItemsService {
    * @param createItemDto - 包含 title 和 content 的对象
    * @returns 新创建的 Item
    */
-  async create(createItemDto: CreateItemDto): Promise<Item> {
-    // 生成简单的唯一 ID（实际生产环境会由数据库自动生成）
-    const id = Date.now().toString();
+  async create(createItemDto: CreateItemDto) {
+    // 使用 Prisma 插入数据到数据库
+    // data: 要插入的数据
+    // Prisma 会自动：
+    // 1. 生成自增 ID
+    // 2. 设置 createdAt 为当前时间（schema 中定义了 @default(now())）
+    const item = await this.prisma.item.create({
+      data: {
+        title: createItemDto.title,
+        content: createItemDto.content,
+      },
+    });
 
-    // 创建新 Item 对象
-    const newItem: Item = {
-      id,
-      title: createItemDto.title,
-      content: createItemDto.content,
-      createdAt: new Date(), // 记录创建时间
-    };
-
-    // 添加到内存数组
-    this.items.push(newItem);
-
-    this.logger.log(`Created item with id: ${id}`);
-    return newItem;
+    this.logger.log(`Created item with id: ${item.id}`);
+    return item;
   }
 
   /**
    * 删除指定 Item
-   * @param id - 要删除的 Item ID
+   * @param id - 要删除的 Item ID（字符串格式，需转换为数字）
    * @returns 删除的 Item
    * @throws NotFoundException - 如果 Item 不存在
    */
-  async remove(id: string): Promise<Item> {
-    // 查找要删除的 Item 索引
-    const index = this.items.findIndex((item) => item.id === id);
+  async remove(id: string) {
+    // 将字符串 ID 转换为数字
+    // Prisma schema 中 id 定义为 Int 类型
+    const itemId = parseInt(id, 10);
 
-    // 如果找不到，抛出 404 异常
-    if (index === -1) {
-      this.logger.warn(`Item with id ${id} not found`);
-      throw new NotFoundException(`Item with id ${id} not found`);
+    // 检查 ID 是否有效
+    if (isNaN(itemId)) {
+      this.logger.warn(`Invalid item id: ${id}`);
+      throw new NotFoundException(`Invalid item id: ${id}`);
     }
 
-    // 从数组中删除并返回被删除的 Item
-    const [removedItem] = this.items.splice(index, 1);
+    try {
+      // 使用 Prisma 删除数据
+      // where: 指定删除条件
+      // 如果 ID 不存在，Prisma 会抛出 RecordNotFound 异常
+      const item = await this.prisma.item.delete({
+        where: { id: itemId },
+      });
 
-    this.logger.log(`Deleted item with id: ${id}`);
-    return removedItem;
+      this.logger.log(`Deleted item with id: ${itemId}`);
+      return item;
+    } catch (error) {
+      // 捕获 Prisma 的 RecordNotFound 异常
+      // 转换为 Nest.js 的 NotFoundException
+      if (error.code === 'P2025') {
+        this.logger.warn(`Item with id ${itemId} not found`);
+        throw new NotFoundException(`Item with id ${itemId} not found`);
+      }
+      // 其他错误直接抛出
+      throw error;
+    }
   }
 }

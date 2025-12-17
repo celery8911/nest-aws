@@ -9,6 +9,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ItemsModule } from './items/items.module';
 import { GithubModule } from './github/github.module';
+import { PrismaService } from './prisma.service';
 
 @Module({
   // imports: 导入其他模块
@@ -32,6 +33,11 @@ import { GithubModule } from './github/github.module';
 
   // providers: 注册服务提供者
   // AppService: 根服务，提供基础功能
-  providers: [AppService],
+  // PrismaService: 全局数据库服务（单例模式）
+  providers: [AppService, PrismaService],
+
+  // exports: 导出 PrismaService 供其他模块使用
+  // 这样其他模块无需重复注册 PrismaService
+  exports: [PrismaService],
 })
 export class AppModule {}
