@@ -22,6 +22,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   /**
    * 模块初始化时连接数据库
    * Nest.js 会在应用启动时自动调用这个方法
+   *
+   * ⚠️ Phase 3-4: 由于没有 VPC，连接会失败，但不阻止应用启动
+   * Phase 5+: VPC 配置后，连接会成功
    */
   async onModuleInit() {
     this.logger.log('Connecting to database...');
@@ -31,8 +34,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       await this.$connect();
       this.logger.log('Database connected successfully');
     } catch (error) {
-      this.logger.error('Failed to connect to database', error);
-      throw error;
+      // ⚠️ 在 Serverless 环境下，如果数据库连接失败，只记录警告
+      // 不抛出错误，让应用可以启动（至少健康检查能工作）
+      // Phase 3-4: 预期会失败（无 VPC）
+      // Phase 5+: 如果失败说明配置有问题
+      this.logger.warn(
+        'Failed to connect to database - app will start but database operations will fail',
+      );
+      this.logger.warn(error);
     }
   }
 

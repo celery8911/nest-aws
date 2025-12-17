@@ -11,6 +11,11 @@ datasource db {
 // Prisma Client 生成配置
 generator client {
   provider = "prisma-client-js" // 生成 JavaScript/TypeScript 客户端
+
+  // binaryTargets: 指定需要生成的二进制文件平台
+  // native: 当前开发平台（macOS）
+  // linux-arm64-openssl-3.0.x: AWS Lambda ARM64 运行时
+  binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
 }
 
 // Item 数据模型

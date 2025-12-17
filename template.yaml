@@ -1,0 +1,173 @@
+# AWS SAM Template
+# 定义 Serverless 应用的基础设施
+
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+# 全局配置
+# 应用于所有资源的默认设置
+Globals:
+  Function:
+    # 超时时间（秒）
+    # Nest.js 应用启动需要时间，设置较长的超时
+    Timeout: 30
+
+    # 内存大小（MB）
+    # 更多内存 = 更多 CPU，加快冷启动
+    MemorySize: 512
+
+    # Runtime 环境
+    Runtime: nodejs20.x
+
+    # CPU 架构
+    # ARM64 比 x86_64 更便宜且性能相当
+    Architectures:
+      - arm64
+
+    # 环境变量（所有 Lambda 共享）
+    Environment:
+      Variables:
+        NODE_ENV: production
+        # 数据库连接字符串
+        # Phase 3: 使用本地数据库（通过 VPC 连接）
+        # Phase 7: 将替换为 Aurora Serverless v2
+        DATABASE_URL: !Ref DatabaseUrl
+        # GitHub Token（用于外部 API 调用）
+        GITHUB_TOKEN: !Ref GithubToken
+
+# 参数定义
+# 部署时可以动态传入的值
+Parameters:
+  # 数据库连接字符串
+  DatabaseUrl:
+    Type: String
+    Description: PostgreSQL 数据库连接字符串
+    Default: postgresql://postgres:postgres@localhost:5432/nest_aws_dev?schema=public
+    NoEcho: true  # 不在控制台显示
+
+  # GitHub Personal Access Token
+  GithubToken:
+    Type: String
+    Description: GitHub Personal Access Token
+    Default: ""
+    NoEcho: true
+
+# 资源定义
+Resources:
+  # Lambda 函数
+  # 运行 Nest.js 应用
+  NestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      # 函数名称
+      FunctionName: nest-aws-backend
+
+      # 代码位置
+      CodeUri: backend/
+
+      # Handler 入口点
+      # 格式：文件名.导出的函数名
+      Handler: dist/lambda.handler
+
+      # 描述
+      Description: Nest.js Serverless Backend
+
+      # CloudWatch Logs 配置
+      LoggingConfig:
+        # 日志格式：JSON 格式便于解析
+        LogFormat: JSON
+        # 应用日志级别
+        ApplicationLogLevel: INFO
+        # 系统日志级别
+        SystemLogLevel: INFO
+        # 日志组名称
+        LogGroup: !Ref NestFunctionLogGroup
+
+      # API Gateway 事件
+      # 所有 HTTP 请求都会触发这个 Lambda
+      Events:
+        # API Gateway 根路径代理
+        ApiEvent:
+          Type: Api
+          Properties:
+            # 路径：捕获所有路径
+            Path: /{proxy+}
+            # 方法：允许所有 HTTP 方法
+            Method: ANY
+            # API Gateway REST API 配置
+            RestApiId: !Ref NestApi
+
+        # 根路径（/）单独配置
+        # 因为 {proxy+} 不匹配空路径
+        RootApiEvent:
+          Type: Api
+          Properties:
+            Path: /
+            Method: ANY
+            RestApiId: !Ref NestApi
+
+      # Phase 3: 不配置 VPC
+      # Phase 5: 将添加 VpcConfig
+      # VpcConfig:
+      #   SubnetIds:
+      #     - subnet-xxx
+      #   SecurityGroupIds:
+      #     - sg-xxx
+
+  # CloudWatch Logs 日志组
+  # 存储 Lambda 函数日志
+  NestFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      # 日志组名称（必须符合 Lambda 的命名规范）
+      LogGroupName: /aws/lambda/nest-aws-backend
+      # 保留期：7 天（控制成本）
+      # Phase 3-9: 短期保留
+      # 生产环境可以设置为 30-90 天
+      RetentionInDays: 7
+
+  # API Gateway REST API
+  # 提供 HTTP 端点
+  NestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      # API 名称
+      Name: nest-aws-api
+
+      # Stage 名称
+      StageName: prod
+
+      # CORS 配置
+      # 允许前端跨域访问
+      Cors:
+        AllowOrigin: "'*'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+
+      # 访问日志配置（可选）
+      # AccessLogSetting:
+      #   DestinationArn: !GetAtt ApiLogGroup.Arn
+      #   Format: '$context.requestId'
+
+# 输出
+# 部署后显示的重要信息
+Outputs:
+  # API Gateway 端点 URL
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${NestApi}.execute-api.${AWS::Region}.amazonaws.com/prod/'
+
+  # Lambda 函数名称
+  FunctionName:
+    Description: Lambda Function Name
+    Value: !Ref NestFunction
+
+  # Lambda 函数 ARN
+  FunctionArn:
+    Description: Lambda Function ARN
+    Value: !GetAtt NestFunction.Arn
+
+  # CloudWatch Logs 日志组
+  LogGroup:
+    Description: CloudWatch Logs Log Group
+    Value: !Ref NestFunctionLogGroup
