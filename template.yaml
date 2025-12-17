@@ -106,13 +106,21 @@ Resources:
             Method: ANY
             RestApiId: !Ref NestApi
 
-      # Phase 3: 不配置 VPC
-      # Phase 5: 将添加 VpcConfig
-      # VpcConfig:
-      #   SubnetIds:
-      #     - subnet-xxx
-      #   SecurityGroupIds:
-      #     - sg-xxx
+      # Phase 5: Lambda 进入 VPC
+      # 配置 Lambda 在私网子网中运行
+      # ⚠️ 注意：进入 VPC 后，Lambda 将失去默认的互联网访问
+      # Phase 8 会添加 NAT Gateway 恢复外网访问
+      VpcConfig:
+        # 私网子网 ID（3 个，分布在不同 AZ）
+        # Lambda 会在这些子网中运行
+        SubnetIds:
+          - subnet-0a3a4aaa4f1b3c5a3
+          - subnet-06c227578bb836a17
+          - subnet-022e0a89b504591c7
+        # Lambda 安全组
+        # 允许 Lambda 访问数据库（通过数据库安全组的入站规则）
+        SecurityGroupIds:
+          - sg-0b796e6774b8a2ccf
 
   # CloudWatch Logs 日志组
   # 存储 Lambda 函数日志
