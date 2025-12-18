@@ -250,9 +250,9 @@ GITHUB_TOKEN="ghp_xxxxx"
 - [x] Phase 3: SAM + Lambda + API Gateway
 - [x] Phase 4: 创建 VPC 网络
 - [x] Phase 5: Lambda 进入 VPC
-- [ ] Phase 6: 创建 Aurora Serverless v2
-- [ ] Phase 7: Prisma 连接 Aurora
-- [ ] Phase 8: 临时创建 NAT Gateway
+- [x] Phase 6: 创建 Aurora Serverless v2
+- [x] Phase 7: Prisma 连接 Aurora
+- [x] Phase 8: 临时创建 NAT Gateway
 - [ ] Phase 9: 删除 NAT Gateway
 - [ ] Phase 10: 前端开发
 - [ ] Phase 11: 前端部署
