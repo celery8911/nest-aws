@@ -1,0 +1,78 @@
+.github-profile {
+  width: 100%;
+}
+
+.github-profile h2 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.description {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.fetch-btn {
+  background-color: #24292e;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.fetch-btn:hover:not(:disabled) {
+  background-color: #1b1f23;
+}
+
+.fetch-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.error {
+  background-color: #fee;
+  color: #c33;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  border: 1px solid #fcc;
+}
+
+.user-card {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid #ddd;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.user-info h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 20px;
+}
+
+.username {
+  color: #666;
+  margin: 0;
+  font-size: 14px;
+}
