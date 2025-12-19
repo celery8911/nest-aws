@@ -6,6 +6,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
+import { PrismaService } from './prisma.service';
 
 async function bootstrap() {
   // 创建日志记录器实例，用于记录启动信息
@@ -20,6 +21,12 @@ async function bootstrap() {
   // 启用 CORS（跨域资源共享）
   // 允许前端应用从不同的域名访问 API
   app.enableCors();
+
+  // 启用 Prisma 优雅关闭
+  // 这对 PM2 管理的应用很重要，确保在重启时正确断开数据库连接
+  const prismaService = app.get(PrismaService);
+  prismaService.enableShutdownHooks();
+  logger.log('Prisma shutdown hooks enabled');
 
   // 从环境变量获取端口，默认为 3000
   // 本地开发使用 3000，Lambda 会使用环境变量中的端口

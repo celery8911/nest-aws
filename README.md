@@ -89,6 +89,17 @@ nest-aws/
 - 避免持续收费
 - 释放 Elastic IP
 
+### Phase 9.5: EC2 部署（可选，与 Lambda 并行）
+- EC2 实例配置（t4g.micro + ARM64）
+- PM2 进程守护
+- Nginx 反向代理
+- 手动部署脚本
+
+**成本**: ~$5/月（包含实例和存储）
+**适用场景**: 学习传统运维流程、持续流量应用
+
+详见：[backend/docs/phase9.5-ec2-deployment.md](backend/docs/phase9.5-ec2-deployment.md)
+
 ### Phase 10: 前端开发
 - React + Vite 项目初始化
 - Item CRUD 界面
