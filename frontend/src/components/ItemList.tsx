@@ -4,10 +4,12 @@
  */
 
 import { useState, useEffect } from 'react';
-import { itemApi, type Item } from '../services/api';
+import { createItemApi, type Item } from '../services/api';
+import { useApi } from '../contexts/ApiContext';
 import './ItemList.css';
 
 export function ItemList() {
+  const { apiUrl, serviceType } = useApi();
   const [items, setItems] = useState<Item[]>([]);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -19,6 +21,7 @@ export function ItemList() {
     try {
       setLoading(true);
       setError(null);
+      const itemApi = createItemApi(apiUrl);
       const data = await itemApi.getAll();
       setItems(data);
     } catch (err) {
@@ -39,6 +42,7 @@ export function ItemList() {
     try {
       setLoading(true);
       setError(null);
+      const itemApi = createItemApi(apiUrl);
       await itemApi.create(title, content);
       setTitle('');
       setContent('');
@@ -59,6 +63,7 @@ export function ItemList() {
     try {
       setLoading(true);
       setError(null);
+      const itemApi = createItemApi(apiUrl);
       await itemApi.delete(id);
       await loadItems();
     } catch (err) {
@@ -68,10 +73,10 @@ export function ItemList() {
     }
   };
 
-  // 初始加载
+  // 初始加载和服务切换时重新加载
   useEffect(() => {
     loadItems();
-  }, []);
+  }, [serviceType]);
 
   return (
     <div className="item-list">

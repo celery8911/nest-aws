@@ -1,0 +1,120 @@
+.service-switcher {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1.25rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.switcher-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  color: white;
+  font-size: 0.85rem;
+}
+
+.current-service {
+  font-weight: 500;
+}
+
+.current-service strong {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-left: 0.25rem;
+}
+
+.current-url {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.switcher-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin: 0 auto;
+}
+
+.switcher-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.5);
+  border: 3px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  opacity: 0.6;
+}
+
+.switcher-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0.9;
+}
+
+.switcher-btn.active {
+  background: white;
+  border-color: #4c51bf;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.3), 0 6px 20px rgba(102, 126, 234, 0.4);
+  opacity: 1;
+  transform: scale(1.03);
+}
+
+.switcher-btn:disabled {
+  cursor: not-allowed;
+}
+
+.btn-icon {
+  font-size: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.switcher-btn.active .btn-icon {
+  transform: scale(1.15);
+}
+
+.btn-text {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #4a5568;
+  transition: color 0.3s ease;
+}
+
+.btn-desc {
+  font-size: 0.7rem;
+  color: #718096;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.switcher-btn.active .btn-text {
+  color: #4c51bf;
+  font-size: 0.95rem;
+}
+
+.switcher-btn.active .btn-desc {
+  color: #667eea;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .switcher-info {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .switcher-buttons {
+    grid-template-columns: 1fr;
+  }
+}
