@@ -22,10 +22,15 @@ build-NodeModulesLayer:
 	cp -r prisma $(ARTIFACTS_DIR)/nodejs/
 	# 生成 Prisma Client
 	cd $(ARTIFACTS_DIR)/nodejs && npx prisma generate
-	# 删除 prisma CLI 和所有 devDependencies（只保留 @prisma/client）
+	# 修改 package.json 删除 devDependencies，然后 prune
+	echo '{"name":"layer","version":"1.0.0","dependencies":{"@prisma/client":"^5.8.0"}}' > $(ARTIFACTS_DIR)/nodejs/package.json
 	cd $(ARTIFACTS_DIR)/nodejs && npm prune --production
+	# 手动删除 prisma CLI（以防 npm prune 失败）
+	rm -rf $(ARTIFACTS_DIR)/nodejs/node_modules/prisma
 	# 生成后删除 prisma 目录（runtime 不需要 schema 文件）
 	rm -rf $(ARTIFACTS_DIR)/nodejs/prisma
 	# 删除不需要的平台二进制文件（只保留 Linux ARM64）
 	find $(ARTIFACTS_DIR)/nodejs/node_modules/.prisma/client -name "*.dylib.node" -delete
 	find $(ARTIFACTS_DIR)/nodejs/node_modules/.prisma/client -name "*darwin*" -delete
+	find $(ARTIFACTS_DIR)/nodejs/node_modules/@prisma -name "*.dylib.node" -delete
+	find $(ARTIFACTS_DIR)/nodejs/node_modules/@prisma -name "*darwin*" -delete
