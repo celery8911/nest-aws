@@ -54,6 +54,24 @@ Parameters:
 
 # 资源定义
 Resources:
+  # Node Modules Layer
+  # 将 node_modules 分离到 Layer 层，减少主函数部署包大小
+  NodeModulesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: nest-aws-dependencies
+      Description: Node.js production dependencies for Nest.js app
+      ContentUri: .
+      CompatibleRuntimes:
+        - nodejs20.x
+      CompatibleArchitectures:
+        - arm64
+      RetentionPolicy: Retain
+    Metadata:
+      # Layer 使用 Makefile 构建
+      BuildMethod: makefile
+      BuildArchitecture: arm64
+
   # Lambda 函数
   # 运行 Nest.js 应用
   NestFunction:
@@ -63,14 +81,20 @@ Resources:
       FunctionName: nest-aws-backend
 
       # 代码位置
-      CodeUri: backend/
+      CodeUri: .
 
       # Handler 入口点
       # 格式：文件名.导出的函数名
-      Handler: dist/lambda.handler
+      # esbuild 打包后的入口
+      Handler: lambda.handler
 
       # 描述
       Description: Nest.js Serverless Backend
+
+      # Lambda Layers
+      # 引用 node_modules Layer
+      Layers:
+        - !Ref NodeModulesLayer
 
       # CloudWatch Logs 配置
       LoggingConfig:
@@ -121,6 +145,12 @@ Resources:
         # 允许 Lambda 访问数据库（通过数据库安全组的入站规则）
         SecurityGroupIds:
           - sg-0b796e6774b8a2ccf
+
+    # Metadata: SAM 构建配置（使用 Makefile 自定义构建）
+    Metadata:
+      # 使用 Makefile 自定义构建
+      # 主函数不包含 node_modules，由 Layer 提供
+      BuildMethod: makefile
 
   # CloudWatch Logs 日志组
   # 存储 Lambda 函数日志
